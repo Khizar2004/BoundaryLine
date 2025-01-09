@@ -1,0 +1,33 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Select Next Batter{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Alert Message -->
+    <div class="alert alert-warning text-center">
+        A wicket has fallen. Please select the next batter to continue.
+    </div>
+    
+    <h1 class="text-center mb-4">Select Next Batter</h1>
+    
+    <!-- Form Section -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="POST" action="{% url 'select_next_batter' match.id %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="batter_id" class="form-label">Select Next Batter:</label>
+                    <select name="batter_id" id="batter_id" class="form-select" required>
+                        <option value="" disabled selected>-- Select Batter --</option>
+                        {% for batter in remaining_batters %}
+                            <option value="{{ batter.id }}">{{ batter.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Set Next Batter</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

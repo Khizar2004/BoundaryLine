@@ -1,0 +1,219 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Live Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Match Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">Live Match</h1>
+        <p class="fs-5 text-secondary">{{ match.team1_name }} vs {{ match.team2_name }}</p>
+    </div>
+
+    <div class="row mb-5 g-4">
+        <!-- Match Info -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h4 class="fw-bold text-center mb-4">Match Details</h4>
+                    <p><strong>Overs:</strong> <span id="overs">{{ overs_display }}</span> / {{ match.overs_per_side }}</p>
+                    <p class="fs-5 text-primary">
+                        <strong>{{ match.batting_team }}:</strong> 
+                        <span id="batting-team-runs">
+                            {% if match.batting_team == match.team1_name %}
+                                {{ match.team1_runs }}
+                            {% else %}
+                                {{ match.team2_runs }}
+                            {% endif %}
+                        </span> runs, 
+                        <span id="batting-team-wickets">
+                            {% if match.batting_team == match.team1_name %}
+                                {{ match.team1_wickets }}
+                            {% else %}
+                                {{ match.team2_wickets }}
+                            {% endif %}
+                        </span> wickets
+                    </p>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Players Info -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h4 class="fw-bold text-center mb-4">Players on the Field</h4>
+                    <p><strong>Bowler:</strong> 
+                        <span id="current-bowler">
+                            {% if match.current_bowler %}
+                                {{ match.current_bowler.name }}
+                            {% else %}
+                                Not Set
+                            {% endif %}
+                        </span>
+                    </p>
+                    <p><strong>Striker:</strong> 
+                        <span id="striker">
+                            {% if match.striker %}
+                                {{ match.striker.name }} - <strong>Runs:</strong> {{ match.striker.runs }}
+                            {% else %}
+                                Not Set
+                            {% endif %}
+                        </span>
+                    </p>
+                    <p><strong>Non-Striker:</strong> 
+                        <span id="non-striker">
+                            {% if match.non_striker %}
+                                {{ match.non_striker.name }} - <strong>Runs:</strong> {{ match.non_striker.runs }}
+                            {% else %}
+                                Not Set
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const matchId = "{{ match.id }}"; // Use quotes for the match ID to avoid syntax issues
+            
+            function sendUpdateRequest(data) {
+                const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                data.match_id = "{{ match.id }}";
+
+                fetch('/update-match/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify(data),
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log('Response:', result);
+
+                        // Update overs
+                        document.getElementById('overs').innerText = result.overs || "0.0";
+
+                        // Update scores and wickets
+                        document.getElementById('team1-score').innerText = result.team1_runs;
+                        document.getElementById('team1-wickets').innerText = result.team1_wickets;
+                        document.getElementById('team2-score').innerText = result.team2_runs;
+                        document.getElementById('team2-wickets').innerText = result.team2_wickets;
+
+                        // Update striker and non-striker info
+                        document.getElementById('striker').innerText = result.striker
+                            ? `${result.striker} - Runs: ${result.striker_runs}`
+                            : "Not Set";
+                        document.getElementById('non-striker').innerText = result.non_striker
+                            ? `${result.non_striker} - Runs: ${result.non_striker_runs}`
+                            : "Not Set";
+
+                        // Update bowler
+                        document.getElementById('current-bowler').innerText = result.current_bowler || "Not Set";
+
+                        // Check for overs completed and redirect if needed
+                        const oversCompleted = parseFloat(result.overs) % 1 === 0;
+                        if (oversCompleted) {
+                            window.location.href = `/set-bowler/${matchId}/`;
+                        }
+
+                        // Handle wicket scenario
+                        if (result.wicket) {
+                            const outPlayerList = document.querySelector('.list-group');
+                            const newPlayer = document.createElement('li');
+                            newPlayer.className = 'list-group-item fade-in';
+                            newPlayer.innerText = `${result.striker} – Out`;
+
+                            outPlayerList.appendChild(newPlayer);
+
+                            if (result.has_remaining_batters) {
+                                // Redirect to select the next batter
+                                setTimeout(() => {
+                                    window.location.href = `/select-next-batter/${matchId}/`;
+                                }, 1000); // Add a slight delay for better UX
+                            } else {
+                                alert("All batters are out. Innings over!");
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error updating match:', error));
+            }
+    
+            document.querySelectorAll('.run-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    sendUpdateRequest({ action: `add_run_${button.dataset.run}` });
+                });
+            });
+    
+            document.getElementById('add-wide').addEventListener('click', () => {
+                sendUpdateRequest({ action: 'add_wide' });
+            });
+    
+            document.getElementById('add-no-ball').addEventListener('click', () => {
+                sendUpdateRequest({ action: 'add_no_ball' });
+            });
+    
+            const wicketButton = document.getElementById('add-wicket');
+            if (wicketButton) {
+                wicketButton.addEventListener('click', () => {
+                    sendUpdateRequest({ action: 'add_wicket' });
+                });
+            }
+        });
+    </script>
+
+    <!-- Update Match Section -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-body text-center">
+            <h4 class="fw-bold mb-4">Update Match</h4>
+            
+            <form id="update-match-form">
+                {% csrf_token %}
+                <!-- Runs -->
+                <div class="d-flex justify-content-center flex-wrap gap-2">
+                    {% for run in runs_options %}
+                        <button 
+                            type="button" 
+                            class="btn btn-outline-primary btn-lg run-button" 
+                            data-run="{{ run }}"
+                        >
+                            {{ run }}
+                        </button>
+                    {% endfor %}
+                </div>
+
+                <!-- Extras -->
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-info btn-lg" id="add-wide">+1 Wide</button>
+                    <button type="button" class="btn btn-outline-warning btn-lg" id="add-no-ball">+1 No Ball</button>
+                </div>
+
+                <!-- Wickets -->
+                {% if not match.is_free_hit %}
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-danger btn-lg" id="add-wicket">+1 Wicket</button>
+                </div>
+                {% else %}
+                <p class="text-danger mt-4">Wickets are disabled during a Free Hit!</p>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Out Players Section -->
+    <div class="text-center">
+        <h5 class="fw-bold mb-4">Out Players</h5>
+        <ul class="list-group list-group-flush mx-auto" style="max-width: 600px;">
+            {% for out_player in out_players %}
+                <li class="list-group-item">{{ out_player.player.name }} – Out</li>
+            {% empty %}
+                <li class="list-group-item text-muted">No players out yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

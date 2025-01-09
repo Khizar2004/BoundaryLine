@@ -1,0 +1,12 @@
+# Python
+*.pyc
+__pycache__/
+
+# Django
+db.sqlite3
+.env
+
+# IDE and System Files
+.vscode/
+.idea/
+.DS_Store

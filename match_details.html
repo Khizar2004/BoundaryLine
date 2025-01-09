@@ -1,0 +1,27 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Match Details{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Match Details</h1>
+    <p><strong>Teams:</strong> {{ match.team1 }} vs {{ match.team2 }}</p>
+    <p><strong>Location:</strong> {{ match.location }}</p>
+    <p><strong>Overs:</strong> {{ match.overs_per_side }}</p>
+    <p><strong>Winner:</strong> {{ match.winner }}</p>
+
+    <h2>Players - {{ match.team1 }}</h2>
+    <ul>
+        {% for player in players_team1 %}
+            <li>{{ player.name }} - Runs: {{ player.runs }} - Out: {{ player.is_out }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Players - {{ match.team2 }}</h2>
+    <ul>
+        {% for player in players_team2 %}
+            <li>{{ player.name }} - Runs: {{ player.runs }} - Out: {{ player.is_out }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
