@@ -1,0 +1,56 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Match List{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="fw-bold text-center mb-4">Past Matches</h1>
+
+    {% if matches.exists %}
+    <div class="row g-4">
+        {% for match in matches %}
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 hover-effect">
+                <div class="card-body">
+                    <h5 class="fw-bold text-center">
+                        {{ match.team1 }} vs {{ match.team2 }}
+                    </h5>
+                    <p class="text-center text-muted">
+                        Location: {{ match.location }}<br>
+                        Date: {{ match.date|date:"M d, Y" }}
+                    </p>
+                    <p class="fw-bold text-success text-center">
+                        Winner: {{ match.winner|default:"TBD" }}
+                    </p>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'match_details' match.id %}" class="btn btn-primary w-100">
+                            <i class="fas fa-info-circle me-2"></i>View Details
+                        </a>
+                        <form method="POST" action="{% url 'delete_match' match.id %}" class="mt-2">
+                            {% csrf_token %}
+                            <button class="btn btn-danger w-100">
+                                <i class="fas fa-trash me-2"></i>Delete Match
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-muted">No matches found. Start a new game to track matches!</p>
+    {% endif %}
+</div>
+
+<!-- Add CSS for Hover Effects -->
+<style>
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease-in-out;
+    }
+</style>
+
+<!-- Add Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+{% endblock %}

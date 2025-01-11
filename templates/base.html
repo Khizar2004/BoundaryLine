@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BoundaryLine{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --card-border: #dee2e6;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --card-border: #333333;
+
+            /* Add button text color fixes for dark mode */
+            --btn-primary-color: #ffffff;
+            --btn-secondary-color: #ffffff;
+            --btn-success-color: #ffffff;
+        }
+
+        button.btn-primary {
+            color: var(--btn-primary-color);
+        }
+
+        button.btn-secondary {
+            color: var(--btn-secondary-color);
+        }
+
+        button.btn-success {
+            color: var(--btn-success-color);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--card-border);
+        }
+
+        .navbar, .footer {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1050;
+            display: none;
+        }
+
+        .navbar-nav .nav-link:hover {
+            text-decoration: underline;
+            transition: all 0.3s ease-in-out;
+        }
+
+        footer a:hover {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        /* Fix for card text in dark mode */
+        [data-theme="dark"] .card p {
+            color: var(--text-color);
+        }
+
+        /* Dark mode for footer */
+        [data-theme="dark"] footer {
+            background-color: #1e1e1e;
+        }
+
+        [data-theme="dark"] footer a {
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">BoundaryLine</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'player_list' %}active{% endif %}" href="{% url 'player_list' %}">Players</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'match_list' %}active{% endif %}" href="{% url 'match_list' %}">Matches</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="navbar-text me-3">Welcome, {{ user.username }}!</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'signup' %}">Signup</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <button id="darkModeToggle" class="btn btn-outline-dark btn-sm">Toggle Dark Mode</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast text-bg-{{ message.tags|default:'info' }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+    <script>
+        // Automatically initialize and show Bootstrap toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(toastEl => {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
+
+            // Show loader during page load
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            window.addEventListener('load', () => {
+                loader.style.display = 'none';
+            });
+
+            // Dark Mode Toggle Logic
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const currentTheme = localStorage.getItem('theme');
+            
+            if (currentTheme) {
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                if (currentTheme === 'dark') {
+                    darkModeToggle.innerText = 'Light Mode';
+                }
+            }
+
+            darkModeToggle.addEventListener('click', () => {
+                const theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    darkModeToggle.innerText = 'Dark Mode';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    darkModeToggle.innerText = 'Light Mode';
+                }
+            });
+        });
+    </script>
+    
+    <!-- Main Content Section -->
+    <div class="container my-4">
+        <div class="card shadow-sm p-4">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4">
+        <p>&copy; 2024 BoundaryLine. All rights reserved.</p>
+        <p>
+            <a href="{% url 'home' %}">Home</a> | 
+            <a href="{% url 'player_list' %}">Players</a> | 
+            <a href="{% url 'match_list' %}">Matches</a>
+        </p>
+    </footer>
+</body>
+</html>
