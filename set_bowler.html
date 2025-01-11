@@ -1,0 +1,31 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Set Bowler{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">Set Bowler</h1>
+    
+    <!-- Form Section -->
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="set_bowler">
+                
+                <div class="mb-3">
+                    <label for="current_bowler" class="form-label">Bowler:</label>
+                    <select name="current_bowler" id="current_bowler" class="form-select" required>
+                        <option value="" disabled selected>Select Bowler</option>
+                        {% for bowler in bowling_team_players %}
+                            <option value="{{ bowler.id }}">{{ bowler.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Set Bowler</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

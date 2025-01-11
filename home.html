@@ -1,0 +1,70 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="hero-section bg-light rounded shadow-sm p-4 mb-5" style="background: linear-gradient(90deg, #f8f9fa, #e9ecef);">
+        <h1 class="display-4 fw-bold mb-3">BoundaryLine </h1>
+        <p class="lead text-muted">Track, manage, and organize your gully cricket matches seamlessly.</p>
+    </div>
+
+    <div class="row g-4 mt-4">
+        <!-- View Players Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 hover-effect">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-users text-primary me-2"></i>View Players
+                    </h5>
+                    <p class="text-muted">Check out your player list and their stats.</p>
+                    <a href="/players/" class="btn btn-primary w-100">
+                        <i class="fas fa-eye me-2"></i>Go to Players
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Matches Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 hover-effect">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-list-alt text-secondary me-2"></i>View Matches
+                    </h5>
+                    <p class="text-muted">Browse past matches and their details.</p>
+                    <a href="/matches/" class="btn btn-secondary w-100">
+                        <i class="fas fa-history me-2"></i>Go to Matches
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Game Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 hover-effect">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-play text-success me-2"></i>Start a New Game
+                    </h5>
+                    <p class="text-muted">Begin a new match and track live scores.</p>
+                    <a href="{% url 'start_game' %}" class="btn btn-success w-100">
+                        <i class="fas fa-plus-circle me-2"></i>Start Game
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Font Awesome CDN -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+<!-- Add CSS for Hover Effects -->
+<style>
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease-in-out;
+    }
+</style>
+{% endblock %}

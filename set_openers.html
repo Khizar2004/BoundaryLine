@@ -1,0 +1,41 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Set Openers{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">Set Opening Batsmen</h1>
+    
+    <!-- Form Section -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="set_openers">
+                
+                <div class="mb-3">
+                    <label for="striker" class="form-label">Striker:</label>
+                    <select name="striker" id="striker" class="form-select" required>
+                        <option value="">Select Striker</option>
+                        {% for player in batting_team_players %}
+                            <option value="{{ player.id }}">{{ player.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="non_striker" class="form-label">Non-Striker:</label>
+                    <select name="non_striker" id="non_striker" class="form-select" required>
+                        <option value="">Select Non-Striker</option>
+                        {% for player in batting_team_players %}
+                            <option value="{{ player.id }}">{{ player.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Set Openers</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
