@@ -50,7 +50,7 @@ BoundaryLine is a professional web application designed to simplify scoring and 
 
 - **Backend**: Django  
 - **Frontend**: Bootstrap (with custom CSS for styling)  
-- **Database**: SQLite (default) or other databases supported by Django  
+- **Database**: SQLite
 - **Real-Time Updates**: AJAX  
 - **Version Control**: Git  
 
