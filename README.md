@@ -142,11 +142,6 @@ This project is licensed under the [MIT License](https://opensource.org/licenses
 
 ---
 
-Contact
-
-For any questions, suggestions, or feedback:
-	•	Email: khizar@example.com
-	•	GitHub: Khizar’s GitHub
 
 
 
