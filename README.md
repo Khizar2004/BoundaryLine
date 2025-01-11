@@ -63,6 +63,7 @@ Follow these steps to set up BoundaryLine on your local system:
 ### Step 1: Clone the Repository
 
 git clone https://github.com/your-username/boundaryline.git
+
 cd boundaryline
 
 ---
@@ -87,12 +88,14 @@ python manage.py migrate
 
 ## Step 5: Run the Development Server
 python manage.py runserver
+
 Access the app in your browser at http://127.0.0.1:8000.
 
 ---
 
 ## Step 6: Access the Admin Panel
 python manage.py createsuperuser
+
 Log in to the admin panel at http://127.0.0.1:8000/admin.
 
 ---
