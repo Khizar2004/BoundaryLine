@@ -1,0 +1,301 @@
+{% extends 'cricket/base.html' %}
+{% load cricket_extras %}
+
+{% block title %}Player Roster - BoundaryLine{% endblock %}
+
+{% block content %}
+<div class="player-list-container">
+    <!-- Header Section -->
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="fw-bold mb-1">Player Roster</h1>
+                <p class="text-secondary mb-0">Manage your cricket players and view statistics</p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0">
+                <a href="{% url 'add_player' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>Add New Player
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search & Filter -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="fas fa-search text-secondary"></i>
+                        </span>
+                        <input type="text" id="playerSearch" class="form-control border-start-0" placeholder="Search players by name...">
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-3 mt-lg-0">
+                    <select id="teamFilter" class="form-select">
+                        <option value="">All Teams</option>
+                        {% for player in players %}
+                            {% if player.team %}
+                                <option value="{{ player.team }}">{{ player.team }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Player Cards -->
+    <div class="row g-4" id="playerCardsContainer">
+        {% if players %}
+            {% for player in players %}
+            <div class="col-md-6 col-lg-4 player-card-wrapper" data-name="{{ player.name|lower }}" data-team="{{ player.team|lower }}">
+                <div class="card border-0 shadow-sm h-100 player-card animate__animated animate__fadeIn">
+                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                        <div class="player-info">
+                            <h4 class="mb-0 player-name">{{ player.name }}</h4>
+                            {% if player.team %}
+                                <span class="badge bg-primary">{{ player.team }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No Team</span>
+                            {% endif %}
+                        </div>
+                        <div class="player-avatar">
+                            <div class="avatar-circle">
+                                <span class="initials">{{ player.name|slice:":1" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="player-stats">
+                            <div class="stat-group">
+                                <div class="stat-item">
+                                    <div class="stat-label">Matches</div>
+                                    <div class="stat-value">{{ player.matches_played|default:"0" }}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Runs</div>
+                                    <div class="stat-value">{{ player.total_runs|default:"0" }}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Avg</div>
+                                    <div class="stat-value">
+                                        {% if player.total_runs and player.matches_played %}
+                                            {{ player.total_runs|div:player.matches_played|floatformat:1 }}
+                                        {% else %}
+                                            0.0
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-group mt-3">
+                                <div class="stat-item">
+                                    <div class="stat-label">Wickets</div>
+                                    <div class="stat-value">{{ player.total_wickets|default:"0" }}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Best</div>
+                                    <div class="stat-value">{{ player.best_figures|default:"0/0" }}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Economy</div>
+                                    <div class="stat-value">{{ player.economy|default:"0.0" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="player-actions mt-3">
+                            <a href="{% url 'player_detail' player.id %}" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="fas fa-info-circle me-1"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm text-center p-5">
+                    <div class="empty-state">
+                        <i class="fas fa-users fa-3x mb-3 text-secondary"></i>
+                        <h3>No Players Yet</h3>
+                        <p class="text-secondary mb-4">Add players to your roster to get started</p>
+                        <a href="{% url 'add_player' %}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add New Player
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- No Results Message (Initially Hidden) -->
+    <div id="noPlayersFound" class="card border-0 shadow-sm text-center p-5 mt-4 d-none">
+        <div class="empty-state">
+            <i class="fas fa-search fa-3x mb-3 text-secondary"></i>
+            <h4>No players found</h4>
+            <p class="text-secondary">Try adjusting your search or filter</p>
+            <button id="clearFilters" class="btn btn-outline-primary mt-2">
+                <i class="fas fa-undo me-2"></i>Clear Filters
+            </button>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="mt-4 text-center">
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-home me-2"></i>Back to Home
+        </a>
+    </div>
+</div>
+
+<style>
+    .player-list-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Player Card */
+    .player-card {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .player-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .player-avatar {
+        margin-left: 1rem;
+    }
+    
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+        background-color: var(--accent-color);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+    
+    /* Player Stats */
+    .player-stats {
+        padding: 0.5rem 0;
+    }
+    
+    .stat-group {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .stat-item {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 20px;
+    }
+    
+    .empty-state i {
+        color: var(--text-secondary);
+        opacity: 0.5;
+    }
+</style>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get elements
+        const playerCards = document.querySelectorAll('.player-card-wrapper');
+        const searchInput = document.getElementById('playerSearch');
+        const teamFilter = document.getElementById('teamFilter');
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        const noPlayersFound = document.getElementById('noPlayersFound');
+        const playerCardsContainer = document.getElementById('playerCardsContainer');
+        
+        // Remove duplicate team options
+        const teamOptions = new Set();
+        Array.from(teamFilter.options).forEach(option => {
+            if (option.value && teamOptions.has(option.value)) {
+                option.remove();
+            } else if (option.value) {
+                teamOptions.add(option.value);
+            }
+        });
+        
+        // Filter function
+        function filterPlayers() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedTeam = teamFilter.value.toLowerCase();
+            let hasVisiblePlayers = false;
+            
+            playerCards.forEach(card => {
+                const playerName = card.dataset.name;
+                const playerTeam = card.dataset.team;
+                
+                // Combined filters
+                const nameMatch = !searchTerm || playerName.includes(searchTerm);
+                const teamMatch = !selectedTeam || playerTeam.includes(selectedTeam);
+                
+                if (nameMatch && teamMatch) {
+                    card.style.display = '';
+                    hasVisiblePlayers = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Show/hide empty state message
+            if (hasVisiblePlayers) {
+                noPlayersFound.classList.add('d-none');
+                playerCardsContainer.classList.remove('d-none');
+            } else if (playerCards.length > 0) {
+                noPlayersFound.classList.remove('d-none');
+                playerCardsContainer.classList.add('d-none');
+            }
+        }
+        
+        // Reset filters function
+        function resetFilters() {
+            searchInput.value = '';
+            teamFilter.value = '';
+            filterPlayers();
+        }
+        
+        // Event listeners
+        searchInput.addEventListener('input', filterPlayers);
+        teamFilter.addEventListener('change', filterPlayers);
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', resetFilters);
+        }
+        
+        // Apply animations to cards
+        playerCards.forEach((card, index) => {
+            setTimeout(() => {
+                const playerCard = card.querySelector('.player-card');
+                if (playerCard) {
+                    playerCard.style.animationDelay = `${index * 0.1}s`;
+                }
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

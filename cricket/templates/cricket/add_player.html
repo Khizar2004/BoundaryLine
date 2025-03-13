@@ -1,0 +1,183 @@
+{% extends 'cricket/base.html' %}
+{% load cricket_extras %}
+
+{% block title %}Add New Player - BoundaryLine{% endblock %}
+
+{% block content %}
+<div class="add-player-container">
+    <!-- Header Section -->
+    <div class="page-header text-center mb-5">
+        <h1 class="display-5 fw-bold mb-2">
+            <i class="fas fa-user-plus text-primary me-2"></i> Add New Player
+        </h1>
+        <p class="lead text-secondary">Create a new player profile for your team</p>
+    </div>
+    
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 p-lg-5">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row g-4">
+                    <!-- Name Field -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" id="{{ form.name.id_for_label }}" name="{{ form.name.html_name }}" 
+                                   class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                   placeholder="Enter player name" required
+                                   value="{{ form.name.value|default:'' }}">
+                            <label for="{{ form.name.id_for_label }}">Player Name</label>
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Enter the full name of the player</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Field -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" id="{{ form.team.id_for_label }}" name="{{ form.team.html_name }}" 
+                                   class="form-control {% if form.team.errors %}is-invalid{% endif %}"
+                                   placeholder="Enter team name"
+                                   value="{{ form.team.value|default:'' }}">
+                            <label for="{{ form.team.id_for_label }}">Team (Optional)</label>
+                            {% if form.team.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.team.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">The team this player belongs to</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Fields Section -->
+                    <div class="col-12">
+                        <div class="form-section mt-3">
+                            <p class="section-title">Player Statistics (Optional)</p>
+                            <div class="row g-3">
+                                <!-- Batting Skill -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select id="batting_skill" name="batting_skill" class="form-select">
+                                            <option value="">Choose...</option>
+                                            <option value="beginner">Beginner</option>
+                                            <option value="intermediate">Intermediate</option>
+                                            <option value="advanced">Advanced</option>
+                                            <option value="expert">Expert</option>
+                                        </select>
+                                        <label for="batting_skill">Batting Skill</label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bowling Skill -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select id="bowling_skill" name="bowling_skill" class="form-select">
+                                            <option value="">Choose...</option>
+                                            <option value="beginner">Beginner</option>
+                                            <option value="intermediate">Intermediate</option>
+                                            <option value="advanced">Advanced</option>
+                                            <option value="expert">Expert</option>
+                                        </select>
+                                        <label for="bowling_skill">Bowling Skill</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="col-12 mt-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'player_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Add Player
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .add-player-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    /* Form styles */
+    .form-floating > .form-control {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+    }
+    
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    
+    /* Section styling */
+    .form-section {
+        background-color: rgba(var(--bg-primary-rgb), 0.5);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Transition animations */
+    .card {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const form = document.querySelector('.needs-validation');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+    });
+</script>
+{% endblock %}

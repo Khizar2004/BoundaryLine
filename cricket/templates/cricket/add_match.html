@@ -1,0 +1,21 @@
+{% extends 'cricket/base.html' %}
+
+{% block title %}Add Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">Add a Completed Match</h1>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-primary w-100">Add Match</button>
+            </form>
+        </div>
+    </div>
+    <div class="text-center mt-3">
+        <a href="{% url 'match_list' %}" class="btn btn-secondary">Back to Match List</a>
+    </div>
+</div>
+{% endblock %}

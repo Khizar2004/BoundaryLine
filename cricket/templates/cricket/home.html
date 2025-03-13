@@ -1,0 +1,218 @@
+{% extends 'cricket/base.html' %}
+{% load cricket_extras %}
+
+{% block title %}Home - BoundaryLine{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Hero Section with Background Image -->
+    <div class="hero-section position-relative mb-5 overflow-hidden rounded-3">
+        <div class="position-absolute w-100 h-100" style="background: linear-gradient(135deg, rgba(67, 97, 238, 0.8), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80') center/cover no-repeat; filter: blur(0px);"></div>
+        <div class="position-relative py-5 text-center text-white">
+            <div class="container py-5">
+                <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInDown">
+                    <i class="fas fa-cricket-bat-ball me-2"></i>BoundaryLine
+                </h1>
+                <p class="lead fw-normal mb-5 animate__animated animate__fadeInUp animate__delay-1s" style="max-width: 700px; margin: 0 auto;">
+                    Track, manage, and organize your gully cricket matches with a professional scorekeeping system
+                </p>
+                <div class="d-flex justify-content-center gap-3 animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="{% url 'start_game' %}" class="btn btn-light btn-lg px-4 py-2 fw-medium">
+                        <i class="fas fa-play me-2"></i>Start New Match
+                    </a>
+                    <a href="{% url 'match_list' %}" class="btn btn-outline-light btn-lg px-4 py-2 fw-medium">
+                        <i class="fas fa-list me-2"></i>View Matches
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="container mb-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3">Everything You Need for Cricket Management</h2>
+            <p class="text-secondary">Comprehensive tools to organize players, matches, and statistics</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-effect">
+                    <div class="card-body p-4">
+                        <div class="feature-icon rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3">
+                            <i class="fas fa-users fa-2x text-primary"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Player Management</h4>
+                        <p class="text-secondary mb-3">Create and manage player profiles with statistics and performance tracking.</p>
+                        <a href="{% url 'player_list' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-arrow-right me-1"></i> Manage Players
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-effect">
+                    <div class="card-body p-4">
+                        <div class="feature-icon rounded-circle bg-success bg-opacity-10 p-3 d-inline-block mb-3">
+                            <i class="fas fa-chart-line fa-2x text-success"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Live Scoring</h4>
+                        <p class="text-secondary mb-3">Real-time match scoring system with detailed ball-by-ball updates.</p>
+                        <a href="{% url 'start_game' %}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-play me-1"></i> Start New Match
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-effect">
+                    <div class="card-body p-4">
+                        <div class="feature-icon rounded-circle bg-warning bg-opacity-10 p-3 d-inline-block mb-3">
+                            <i class="fas fa-history fa-2x text-warning"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Match History</h4>
+                        <p class="text-secondary mb-3">Review past matches with comprehensive statistics and summaries.</p>
+                        <a href="{% url 'match_list' %}" class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-list me-1"></i> View Match History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="container mb-5">
+        <div class="row g-4">
+            <!-- View Players Card -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-effect">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fas fa-users fa-3x text-primary"></i>
+                        </div>
+                        <h3 class="fw-bold mb-3">Player Roster</h3>
+                        <p class="text-secondary mb-4">View all players, their statistics, and performance records.</p>
+                        <div class="d-grid">
+                            <a href="{% url 'player_list' %}" class="btn btn-primary">
+                                <i class="fas fa-eye me-2"></i>View Players
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Matches Card -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-effect">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fas fa-list-alt fa-3x text-success"></i>
+                        </div>
+                        <h3 class="fw-bold mb-3">Match Records</h3>
+                        <p class="text-secondary mb-4">Browse all matches with their complete scorecards and details.</p>
+                        <div class="d-grid">
+                            <a href="{% url 'match_list' %}" class="btn btn-success">
+                                <i class="fas fa-history me-2"></i>View Matches
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Start Game Card -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 hover-effect">
+                    <div class="card-body p-4 text-center">
+                        <div class="icon-wrapper mb-3">
+                            <i class="fas fa-play-circle fa-3x text-warning"></i>
+                        </div>
+                        <h3 class="fw-bold mb-3">New Match</h3>
+                        <p class="text-secondary mb-4">Start a new cricket match and track the score in real-time.</p>
+                        <div class="d-grid">
+                            <a href="{% url 'start_game' %}" class="btn btn-warning text-white">
+                                <i class="fas fa-plus-circle me-2"></i>Start Game
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional CSS for Home Page -->
+<style>
+    .hero-section {
+        min-height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-wrapper {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Card hover animation */
+    .hover-effect {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-effect:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Colors for dark mode compatibility */
+    [data-theme="dark"] .feature-icon.bg-primary {
+        background-color: rgba(67, 97, 238, 0.2) !important;
+    }
+
+    [data-theme="dark"] .feature-icon.bg-success {
+        background-color: rgba(64, 192, 87, 0.2) !important;
+    }
+
+    [data-theme="dark"] .feature-icon.bg-warning {
+        background-color: rgba(253, 158, 43, 0.2) !important;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<!-- Animation script for elements as they enter viewport -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create an Intersection Observer for animating elements on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    observer.unobserve(entry.target); // Unobserve after animation
+                }
+            });
+        }, { threshold: 0.1 });
+
+        // Observe feature cards and quick action cards
+        document.querySelectorAll('.card').forEach(card => {
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %}

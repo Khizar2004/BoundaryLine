@@ -1,0 +1,821 @@
+{% extends 'cricket/base.html' %}
+{% load cricket_extras %}
+
+{% block title %}Live Match - {{ match.team1_name }} vs {{ match.team2_name }}{% endblock %}
+
+{% block content %}
+<div class="match-container">
+    <!-- Match Header with Teams -->
+    <div class="match-header mb-4">
+        <div class="team-vs-container">
+            <div class="team team1 {% if match.batting_team == match.team1_name %}batting{% endif %}">
+                <h3 class="team-name">{{ match.team1_name }}</h3>
+                <div class="team-score">
+                    <span id="team1-score">{{ match.team1_runs }}</span>/<span id="team1-wickets">{{ match.team1_wickets }}</span>
+                </div>
+                {% if match.batting_team == match.team1_name %}
+                    <div class="batting-indicator">Batting</div>
+                {% endif %}
+            </div>
+            
+            <div class="vs-badge">
+                <span>VS</span>
+            </div>
+            
+            <div class="team team2 {% if match.batting_team == match.team2_name %}batting{% endif %}">
+                <h3 class="team-name">{{ match.team2_name }}</h3>
+                <div class="team-score">
+                    <span id="team2-score">{{ match.team2_runs }}</span>/<span id="team2-wickets">{{ match.team2_wickets }}</span>
+                </div>
+                {% if match.batting_team == match.team2_name %}
+                    <div class="batting-indicator">Batting</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Match Info Card -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100 match-info-card">
+                <div class="card-header bg-transparent border-0">
+                    <h4 class="fw-bold m-0">
+                        <i class="fas fa-info-circle me-2"></i>Match Information
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="match-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Overs</div>
+                            <div class="detail-value progress-container">
+                                <div class="overs-display">
+                                    <span id="overs">{{ overs_display }}</span> / {{ match.overs_per_side }}
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         style="width: {{ progress_percentage|default:0 }}%;" 
+                                         aria-valuenow="{{ overs_display|floatformat:1 }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="{{ match.overs_per_side }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Batting Team</div>
+                            <div class="detail-value">
+                                <span class="badge bg-success">{{ match.batting_team }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Current Run Rate</div>
+                            <div class="detail-value" id="current-run-rate">
+                                {% if match.batting_team == match.team1_name %}
+                                    {% with crr=match.team1_runs|floatformat:0|div:overs_display|default:0 %}
+                                        {{ crr|floatformat:2 }}
+                                    {% endwith %}
+                                {% else %}
+                                    {% with crr=match.team2_runs|floatformat:0|div:overs_display|default:0 %}
+                                        {{ crr|floatformat:2 }}
+                                    {% endwith %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if match.is_free_hit %}
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value">
+                                <span class="badge bg-warning animate__animated animate__pulse animate__infinite">FREE HIT</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Players Card -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100 players-card">
+                <div class="card-header bg-transparent border-0">
+                    <h4 class="fw-bold m-0">
+                        <i class="fas fa-users me-2"></i>Players on Field
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="player-item bowler-item">
+                        <div class="player-role">
+                            <i class="fas fa-bowling-ball text-danger"></i> Bowler
+                        </div>
+                        <div class="player-data" id="current-bowler">
+                            {% if match.current_bowler %}
+                            <div class="player-name">{{ match.current_bowler.name }}</div>
+                            <div class="player-stats">
+                                <span class="stat">
+                                    <i class="fas fa-baseball me-1"></i> {{ match.current_bowler.overs }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-running me-1"></i> {{ match.current_bowler.runs_given }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-bullseye me-1"></i> {{ match.current_bowler.wickets }}
+                                </span>
+                            </div>
+                            {% else %}
+                            <div class="player-name text-muted">Not Set</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="player-item striker-item">
+                        <div class="player-role">
+                            <i class="fas fa-star text-warning"></i> Striker
+                        </div>
+                        <div class="player-data" id="striker">
+                            {% if match.striker %}
+                            <div class="player-name">{{ match.striker.name }}</div>
+                            <div class="player-stats">
+                                <span class="stat">
+                                    <i class="fas fa-running me-1"></i> {{ match.striker.runs }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-baseball me-1"></i> {{ match.striker.balls_faced }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-percentage me-1"></i> 
+                                    {% if match.striker.balls_faced > 0 %}
+                                        {{ match.striker.runs|mul:100|div:match.striker.balls_faced|floatformat:0 }}
+                                    {% else %}
+                                        0.00
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% else %}
+                            <div class="player-name text-muted">Not Set</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="player-item non-striker-item">
+                        <div class="player-role">
+                            <i class="fas fa-user text-primary"></i> Non-Striker
+                        </div>
+                        <div class="player-data" id="non-striker">
+                            {% if match.non_striker %}
+                            <div class="player-name">{{ match.non_striker.name }}</div>
+                            <div class="player-stats">
+                                <span class="stat">
+                                    <i class="fas fa-running me-1"></i> {{ match.non_striker.runs }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-baseball me-1"></i> {{ match.non_striker.balls_faced }}
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-percentage me-1"></i> 
+                                    {% if match.non_striker.balls_faced > 0 %}
+                                        {{ match.non_striker.runs|mul:100|div:match.non_striker.balls_faced|floatformat:0 }}
+                                    {% else %}
+                                        0.00
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% else %}
+                            <div class="player-name text-muted">Not Set</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scoring Controls -->
+    <div class="card border-0 shadow-sm mb-5 scoring-card">
+        <div class="card-header bg-transparent border-0">
+            <h4 class="fw-bold m-0 text-center">
+                <i class="fas fa-gamepad me-2"></i>Update Score
+            </h4>
+        </div>
+        <div class="card-body">
+            <form id="update-match-form">
+                {% csrf_token %}
+                
+                <!-- Runs Section -->
+                <div class="scoring-section">
+                    <h5 class="section-title">Runs</h5>
+                    <div class="runs-container">
+                        {% for run in runs_options %}
+                            <button 
+                                type="button" 
+                                class="btn-run run-button" 
+                                data-run="{{ run }}"
+                            >
+                                {{ run }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Extras Section -->
+                <div class="scoring-section">
+                    <h5 class="section-title">Extras</h5>
+                    <div class="extras-container">
+                        <button type="button" class="btn btn-outline-info" id="add-wide">
+                            <i class="fas fa-arrows-alt-h me-2"></i>Wide
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" id="add-no-ball">
+                            <i class="fas fa-exclamation-circle me-2"></i>No Ball
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Wicket Section -->
+                <div class="scoring-section">
+                    <h5 class="section-title">Wicket</h5>
+                    <div class="wicket-container">
+                        {% if not match.is_free_hit %}
+                            <button type="button" class="btn btn-outline-danger" id="add-wicket">
+                                <i class="fas fa-times-circle me-2"></i>Wicket
+                            </button>
+                        {% else %}
+                            <div class="free-hit-message">
+                                <i class="fas fa-info-circle me-2"></i>Wickets are disabled during a Free Hit
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Out Players Section -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-transparent border-0">
+            <h4 class="fw-bold m-0">
+                <i class="fas fa-user-slash me-2"></i>Out Players
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="out-players-container">
+                {% for out_player in out_players %}
+                    <div class="out-player-item">
+                        <div class="out-player-icon">
+                            <i class="fas fa-user-times"></i>
+                        </div>
+                        <div class="out-player-name">{{ out_player.player.name }}</div>
+                        <div class="out-player-stats">
+                            <span class="stat">{{ out_player.player.runs }} runs</span>
+                            <span class="stat">{{ out_player.player.balls_faced }} balls</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-message">
+                        <i class="fas fa-info-circle me-2"></i>No players out yet
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Match Container */
+    .match-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    /* Team vs Display */
+    .match-header {
+        margin-bottom: 30px;
+    }
+    
+    .team-vs-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+    }
+    
+    .team {
+        width: 45%;
+        text-align: center;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: var(--bg-secondary);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .team.batting {
+        box-shadow: 0 8px 15px rgba(67, 97, 238, 0.15);
+        transform: translateY(-5px);
+    }
+    
+    .team-name {
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .team-score {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-color);
+    }
+    
+    .vs-badge {
+        width: 60px;
+        height: 60px;
+        background-color: var(--accent-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 700;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+    
+    .batting-indicator {
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--success-color);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Match Info Card */
+    .match-info-card .card-body {
+        padding: 20px;
+    }
+    
+    .match-details .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .match-details .detail-item:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .progress-container {
+        width: 60%;
+    }
+    
+    .overs-display {
+        margin-bottom: 5px;
+        text-align: right;
+    }
+    
+    /* Players Card */
+    .players-card .card-body {
+        padding: 20px;
+    }
+    
+    .player-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+        background-color: rgba(var(--bg-primary-rgb), 0.5);
+    }
+    
+    .player-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .player-role {
+        flex: 0 0 120px;
+        font-weight: 600;
+    }
+    
+    .player-data {
+        flex-grow: 1;
+    }
+    
+    .player-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+    
+    .player-stats {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .player-stats .stat {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    /* Scoring Controls */
+    .scoring-card .card-body {
+        padding: 25px;
+    }
+    
+    .scoring-section {
+        margin-bottom: 25px;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+    }
+    
+    .runs-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+    
+    .btn-run {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid var(--accent-color);
+        color: var(--accent-color);
+        background-color: transparent;
+    }
+    
+    .btn-run:hover {
+        background-color: var(--accent-color);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .extras-container, .wicket-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+    
+    .extras-container .btn, .wicket-container .btn {
+        padding: 10px 20px;
+        font-weight: 500;
+    }
+    
+    .free-hit-message {
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: rgba(var(--warning-color-rgb), 0.1);
+        color: var(--warning-color);
+    }
+    
+    /* Out Players */
+    .out-players-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .out-player-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border-radius: 8px;
+        background-color: rgba(var(--danger-color-rgb), 0.05);
+    }
+    
+    .out-player-icon {
+        color: var(--danger-color);
+        font-size: 1.2rem;
+        margin-right: 15px;
+    }
+    
+    .out-player-name {
+        font-weight: 600;
+        flex-grow: 1;
+    }
+    
+    .out-player-stats {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .out-player-stats .stat {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    
+    .empty-message {
+        text-align: center;
+        padding: 20px;
+        color: var(--text-secondary);
+    }
+    
+    /* Dark mode compatibility */
+    [data-theme="dark"] .team-score {
+        color: var(--accent-color);
+    }
+    
+    [data-theme="dark"] .player-item {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+    
+    [data-theme="dark"] .out-player-item {
+        background-color: rgba(250, 82, 82, 0.15);
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* New item animation */
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const matchId = "{{ match.id }}";
+        
+        function sendUpdateRequest(data) {
+            // Show loading state
+            document.body.classList.add('updating');
+            
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            data.match_id = matchId;
+
+            fetch('/update-match/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('Response:', result);
+                    
+                    // Update UI with received data
+                    updateMatchUI(result);
+                    
+                    // Play sound effect based on action
+                    playSound(data.action);
+                    
+                    // Remove loading state
+                    document.body.classList.remove('updating');
+                    
+                    // Handle wicket case
+                    if (result.wicket) {
+                        // Show notification
+                        showNotification('Wicket! ' + result.out_player + ' is out.', 'danger');
+                        
+                        // Redirect to select next batter if there are remaining batters
+                        if (result.has_remaining_batters) {
+                            setTimeout(() => {
+                                window.location.href = `/match/${matchId}/select-next-batter/`;
+                            }, 1500);
+                        } else {
+                            showNotification('All batters are out. Innings over!', 'danger');
+                        }
+                        return; // Exit early to prevent further processing
+                    }
+                    
+                    // Check for overs completed
+                    if (result.require_new_bowler) {
+                        showNotification('Over completed! Select next bowler.', 'info');
+                        setTimeout(() => {
+                            window.location.href = `/set-bowler/${matchId}/`;
+                        }, 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating match:', error);
+                    showNotification('Failed to update match. Please try again.', 'danger');
+                    document.body.classList.remove('updating');
+                });
+        }
+        
+        function updateMatchUI(data) {
+            // Update overs
+            const oversElement = document.getElementById('overs');
+            if (oversElement) oversElement.textContent = data.overs || "0.0";
+            
+            // Update team scores
+            const team1ScoreEl = document.getElementById('team1-score');
+            const team1WicketsEl = document.getElementById('team1-wickets');
+            const team2ScoreEl = document.getElementById('team2-score');
+            const team2WicketsEl = document.getElementById('team2-wickets');
+            
+            if (team1ScoreEl) team1ScoreEl.textContent = data.team1_runs;
+            if (team1WicketsEl) team1WicketsEl.textContent = data.team1_wickets;
+            if (team2ScoreEl) team2ScoreEl.textContent = data.team2_runs;
+            if (team2WicketsEl) team2WicketsEl.textContent = data.team2_wickets;
+            
+            // Update current run rate
+            const crrElement = document.getElementById('current-run-rate');
+            if (crrElement && data.current_run_rate) {
+                crrElement.textContent = parseFloat(data.current_run_rate).toFixed(2);
+            }
+            
+            // Update batsmen
+            updatePlayerInfo('striker', data.striker, data.striker_runs, data.striker_balls);
+            updatePlayerInfo('non-striker', data.non_striker, data.non_striker_runs, data.non_striker_balls);
+            
+            // Update bowler
+            const bowlerElement = document.getElementById('current-bowler');
+            if (bowlerElement && data.current_bowler) {
+                const bowlerHTML = `
+                    <div class="player-name">${data.current_bowler}</div>
+                    <div class="player-stats">
+                        <span class="stat">
+                            <i class="fas fa-baseball me-1"></i> ${data.bowler_overs || '0.0'}
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-running me-1"></i> ${data.bowler_runs || '0'}
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-bullseye me-1"></i> ${data.bowler_wickets || '0'}
+                        </span>
+                    </div>
+                `;
+                bowlerElement.innerHTML = bowlerHTML;
+            }
+            
+            // Update out players list if there's a new wicket
+            if (data.wicket && data.out_player) {
+                const outPlayersContainer = document.querySelector('.out-players-container');
+                const emptyMessage = outPlayersContainer.querySelector('.empty-message');
+                
+                if (emptyMessage) {
+                    emptyMessage.remove();
+                }
+                
+                const newOutPlayerItem = document.createElement('div');
+                newOutPlayerItem.className = 'out-player-item fade-in';
+                newOutPlayerItem.innerHTML = `
+                    <div class="out-player-icon">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div class="out-player-name">${data.out_player}</div>
+                    <div class="out-player-stats">
+                        <span class="stat">${data.out_player_runs || '0'} runs</span>
+                        <span class="stat">${data.out_player_balls || '0'} balls</span>
+                    </div>
+                `;
+                
+                outPlayersContainer.prepend(newOutPlayerItem);
+            }
+        }
+        
+        function updatePlayerInfo(playerType, name, runs, balls) {
+            const element = document.getElementById(playerType);
+            if (!element) return;
+            
+            if (name) {
+                const strikeRate = balls > 0 ? ((runs / balls) * 100).toFixed(0) : '0.00';
+                const playerHTML = `
+                    <div class="player-name">${name}</div>
+                    <div class="player-stats">
+                        <span class="stat">
+                            <i class="fas fa-running me-1"></i> ${runs || '0'}
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-baseball me-1"></i> ${balls || '0'}
+                        </span>
+                        <span class="stat">
+                            <i class="fas fa-percentage me-1"></i> ${strikeRate}
+                        </span>
+                    </div>
+                `;
+                element.innerHTML = playerHTML;
+            } else {
+                element.innerHTML = '<div class="player-name text-muted">Not Set</div>';
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Create toast container if it doesn't exist
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast text-bg-${type}`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Initialize and show toast
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 5000
+            });
+            bsToast.show();
+            
+            // Remove toast after it's hidden
+            toast.addEventListener('hidden.bs.toast', function() {
+                toast.remove();
+            });
+        }
+        
+        function playSound(action) {
+            // You could implement sound effects here
+            // For example: const audio = new Audio('/static/sounds/bat-hit.mp3'); audio.play();
+            // This would require adding sound files to your project
+        }
+        
+        // Event listeners for buttons
+        document.querySelectorAll('.run-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const run = button.dataset.run;
+                button.classList.add('clicked');
+                setTimeout(() => button.classList.remove('clicked'), 300);
+                sendUpdateRequest({ action: `add_run_${run}` });
+            });
+        });
+        
+        document.getElementById('add-wide').addEventListener('click', () => {
+            sendUpdateRequest({ action: 'add_wide' });
+        });
+        
+        document.getElementById('add-no-ball').addEventListener('click', () => {
+            sendUpdateRequest({ action: 'add_no_ball' });
+        });
+        
+        const wicketButton = document.getElementById('add-wicket');
+        if (wicketButton) {
+            wicketButton.addEventListener('click', () => {
+                if (confirm('Are you sure you want to add a wicket?')) {
+                    sendUpdateRequest({ action: 'add_wicket' });
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

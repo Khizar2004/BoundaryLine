@@ -1,0 +1,736 @@
+{% extends 'cricket/base.html' %}
+{% load cricket_extras %}
+
+{% block title %}Start New Match - BoundaryLine{% endblock %}
+
+{% block content %}
+<div class="start-game-container">
+    <!-- Header Section -->
+    <div class="page-header text-center mb-5">
+        <h1 class="display-4 fw-bold mb-2">
+            <i class="fas fa-flag-checkered text-primary me-2"></i> Start New Match
+        </h1>
+        <p class="lead text-secondary">Set up your teams and match details</p>
+    </div>
+    
+    <!-- Match Setup Form -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <!-- Stepper Tabs -->
+            <ul class="nav nav-tabs nav-fill" id="setupTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="match-details-tab" data-bs-toggle="tab" data-bs-target="#match-details" type="button" role="tab" aria-controls="match-details" aria-selected="true">
+                        <i class="fas fa-info-circle me-2"></i>Match Details
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="team-selection-tab" data-bs-toggle="tab" data-bs-target="#team-selection" type="button" role="tab" aria-controls="team-selection" aria-selected="false">
+                        <i class="fas fa-users me-2"></i>Team Selection
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab" aria-controls="review" aria-selected="false">
+                        <i class="fas fa-check-circle me-2"></i>Review & Start
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Form Content -->
+            <form method="POST" action="{% url 'start_game' %}" id="gameSetupForm">
+                {% csrf_token %}
+                <div class="tab-content p-4" id="setupTabsContent">
+                    <!-- Match Details Tab -->
+                    <div class="tab-pane fade show active" id="match-details" role="tabpanel" aria-labelledby="match-details-tab">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    {{ match_form.team1_name }}
+                                    <label for="{{ match_form.team1_name.id_for_label }}">Team 1 Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    {{ match_form.team2_name }}
+                                    <label for="{{ match_form.team2_name.id_for_label }}">Team 2 Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    {{ match_form.match_date }}
+                                    <label for="{{ match_form.match_date.id_for_label }}">Match Date</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    {{ match_form.overs_per_side }}
+                                    <label for="{{ match_form.overs_per_side.id_for_label }}">Overs per Side</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="match-type-selection mt-4">
+                            <p class="mb-3 fw-bold">Match Format</p>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="format-card active" data-overs="5">
+                                        <div class="format-icon">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <h5>T5</h5>
+                                        <p>Quick 5-over match</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="format-card" data-overs="10">
+                                        <div class="format-icon">
+                                            <i class="fas fa-stopwatch"></i>
+                                        </div>
+                                        <h5>T10</h5>
+                                        <p>Standard 10-over match</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="format-card" data-overs="20">
+                                        <div class="format-icon">
+                                            <i class="fas fa-hourglass-half"></i>
+                                        </div>
+                                        <h5>T20</h5>
+                                        <p>Full 20-over match</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-primary next-tab" data-next="team-selection-tab">
+                                Next Step <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Selection Tab -->
+                    <div class="tab-pane fade" id="team-selection" role="tabpanel" aria-labelledby="team-selection-tab">
+                        <div class="teams-container">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="team-selection-card">
+                                        <h4 class="team-name team1-name">Team 1</h4>
+                                        <div class="player-selection">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <label class="form-label">Select Team 1 Players <span class="text-secondary">(min. 2 players)</span></label>
+                                                <div class="selection-actions">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary select-all-btn" data-target="team1">Select All</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary deselect-all-btn" data-target="team1">Clear</button>
+                                                </div>
+                                            </div>
+                                            <input type="text" class="form-control player-search mb-2" placeholder="Search players..." data-target="team1">
+                                            <div class="dual-list-box">
+                                                <div class="available-list-container">
+                                                    <h6 class="list-title">Available Players</h6>
+                                                    <ul class="available-players player-list" data-for="team1">
+                                                        <!-- Will be populated via JavaScript -->
+                                                    </ul>
+                                                </div>
+                                                <div class="list-controls">
+                                                    <button type="button" class="btn btn-sm btn-primary mb-2 add-player-btn" data-target="team1">
+                                                        <i class="fas fa-chevron-right"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-primary remove-player-btn" data-target="team1">
+                                                        <i class="fas fa-chevron-left"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="selected-list-container" data-for="team1">
+                                                    <h6 class="list-title">Selected Players <span class="selected-count" data-for="team1">0</span></h6>
+                                                    <ul class="selected-players player-list" data-for="team1">
+                                                        <!-- Will be populated via JavaScript -->
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <!-- Keep the original select for form submission but hide it -->
+                                            <div class="d-none">
+                                                {{ team_form.team1_players }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="team-selection-card">
+                                        <h4 class="team-name team2-name">Team 2</h4>
+                                        <div class="player-selection">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <label class="form-label">Select Team 2 Players <span class="text-secondary">(min. 2 players)</span></label>
+                                                <div class="selection-actions">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary select-all-btn" data-target="team2">Select All</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary deselect-all-btn" data-target="team2">Clear</button>
+                                                </div>
+                                            </div>
+                                            <input type="text" class="form-control player-search mb-2" placeholder="Search players..." data-target="team2">
+                                            <div class="dual-list-box">
+                                                <div class="available-list-container">
+                                                    <h6 class="list-title">Available Players</h6>
+                                                    <ul class="available-players player-list" data-for="team2">
+                                                        <!-- Will be populated via JavaScript -->
+                                                    </ul>
+                                                </div>
+                                                <div class="list-controls">
+                                                    <button type="button" class="btn btn-sm btn-primary mb-2 add-player-btn" data-target="team2">
+                                                        <i class="fas fa-chevron-right"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-primary remove-player-btn" data-target="team2">
+                                                        <i class="fas fa-chevron-left"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="selected-list-container" data-for="team2">
+                                                    <h6 class="list-title">Selected Players <span class="selected-count" data-for="team2">0</span></h6>
+                                                    <ul class="selected-players player-list" data-for="team2">
+                                                        <!-- Will be populated via JavaScript -->
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <!-- Keep the original select for form submission but hide it -->
+                                            <div class="d-none">
+                                                {{ team_form.team2_players }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary prev-tab" data-prev="match-details-tab">
+                                <i class="fas fa-arrow-left me-2"></i> Previous
+                            </button>
+                            <button type="button" class="btn btn-primary next-tab" data-next="review-tab">
+                                Next Step <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Review Tab -->
+                    <div class="tab-pane fade" id="review" role="tabpanel" aria-labelledby="review-tab">
+                        <div class="match-summary">
+                            <h4 class="mb-4"><i class="fas fa-clipboard-check me-2 text-success"></i> Match Summary</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="summary-section">
+                                        <h5>Match Details</h5>
+                                        <ul class="summary-list">
+                                            <li><strong>Date:</strong> <span class="summary-date"></span></li>
+                                            <li><strong>Format:</strong> <span class="summary-format"></span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="summary-section">
+                                        <h5>Teams</h5>
+                                        <div class="team-summary">
+                                            <p class="team-name-display team1-name"></p>
+                                            <p class="team-name-display team2-name"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-4">
+                                <i class="fas fa-info-circle me-2"></i> Ready to start the match? Once you begin, you'll be taken to the scoring interface.
+                            </div>
+                            
+                            <div class="coin-toss mt-4">
+                                <h5>Coin Toss</h5>
+                                <p>Who won the toss?</p>
+                                <div class="toss-selection">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="toss_winner" id="team1Toss" value="team1" checked>
+                                        <label class="form-check-label" for="team1Toss">Team 1</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="toss_winner" id="team2Toss" value="team2">
+                                        <label class="form-check-label" for="team2Toss">Team 2</label>
+                                    </div>
+                                </div>
+                                <p class="mt-3">What did they choose?</p>
+                                <div class="decision-selection">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="toss_decision" id="batting" value="bat" checked>
+                                        <label class="form-check-label" for="batting">Batting</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="toss_decision" id="bowling" value="bowl">
+                                        <label class="form-check-label" for="bowling">Bowling</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary prev-tab" data-prev="team-selection-tab">
+                                <i class="fas fa-arrow-left me-2"></i> Previous
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-play me-2"></i> Start Match
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Error Messages -->
+    {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-2">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .start-game-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    /* Form styles */
+    .form-floating > .form-control {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+    }
+    
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+    }
+    
+    /* Format cards */
+    .format-card {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .format-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .format-card.active {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 1px var(--accent-color);
+    }
+    
+    .format-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 15px;
+        background-color: rgba(var(--accent-color-rgb), 0.1);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        color: var(--accent-color);
+    }
+    
+    .format-card h5 {
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+    
+    .format-card p {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    /* Team selection card */
+    .team-selection-card {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+    
+    .team-name {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    /* Summary styles */
+    .summary-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .summary-list {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .summary-list li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .team-name-display {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Style select dropdowns */
+    select.form-select[multiple] {
+        min-height: 200px;
+    }
+    
+    /* Dual list box styling */
+    .dual-list-box {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .available-list-container,
+    .selected-list-container {
+        flex: 1;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background-color: var(--bg-primary);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .selected-list-container.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .list-title {
+        padding: 8px 12px;
+        margin: 0;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        font-size: 0.9rem;
+        background-color: rgba(var(--bg-secondary-rgb), 0.5);
+        border-radius: 5px 5px 0 0;
+    }
+    
+    .player-list {
+        height: 200px;
+        overflow-y: auto;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .player-list li {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 0.9rem;
+    }
+    
+    .player-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .player-list li:hover {
+        background-color: rgba(var(--accent-color-rgb), 0.1);
+    }
+    
+    .player-list li.selected {
+        background-color: rgba(var(--accent-color-rgb), 0.15);
+        font-weight: 500;
+    }
+    
+    .list-controls {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 0 5px;
+    }
+    
+    .list-controls .btn {
+        width: 40px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .player-search {
+        margin-top: 10px;
+    }
+    
+    .selected-count {
+        background-color: var(--accent-color);
+        color: white;
+        border-radius: 50px;
+        padding: 0.1rem 0.5rem;
+        font-size: 0.8rem;
+        margin-left: 5px;
+        font-weight: 700;
+    }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get form elements
+        const form = document.getElementById('gameSetupForm');
+        const team1NameInput = document.getElementById('{{ match_form.team1_name.id_for_label }}');
+        const team2NameInput = document.getElementById('{{ match_form.team2_name.id_for_label }}');
+        const oversInput = document.getElementById('{{ match_form.overs_per_side.id_for_label }}');
+        const dateInput = document.getElementById('{{ match_form.match_date.id_for_label }}');
+        const team1PlayersSelect = document.getElementById('{{ team_form.team1_players.id_for_label }}');
+        const team2PlayersSelect = document.getElementById('{{ team_form.team2_players.id_for_label }}');
+        
+        // Set today's date as default
+        if (dateInput.value === '') {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+        
+        // Tab navigation
+        document.querySelectorAll('.next-tab').forEach(button => {
+            button.addEventListener('click', function() {
+                const nextTab = document.getElementById(this.dataset.next);
+                nextTab.click();
+            });
+        });
+        
+        document.querySelectorAll('.prev-tab').forEach(button => {
+            button.addEventListener('click', function() {
+                const prevTab = document.getElementById(this.dataset.prev);
+                prevTab.click();
+            });
+        });
+        
+        // Format card selection
+        document.querySelectorAll('.format-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.format-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                oversInput.value = this.dataset.overs;
+            });
+        });
+        
+        // Dual List Box Player Selection Implementation
+        
+        // Initialize the player lists
+        function initializePlayerLists() {
+            setupPlayerList('team1', team1PlayersSelect);
+            setupPlayerList('team2', team2PlayersSelect);
+        }
+        
+        function setupPlayerList(teamKey, selectElement) {
+            const availableList = document.querySelector(`.available-players[data-for="${teamKey}"]`);
+            const selectedList = document.querySelector(`.selected-players[data-for="${teamKey}"]`);
+            const allOptions = Array.from(selectElement.options);
+            
+            // Clear the lists
+            availableList.innerHTML = '';
+            selectedList.innerHTML = '';
+            
+            // Populate the lists
+            allOptions.forEach(option => {
+                const li = document.createElement('li');
+                li.dataset.value = option.value;
+                li.textContent = option.textContent;
+                li.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+                
+                if (option.selected) {
+                    selectedList.appendChild(li);
+                } else {
+                    availableList.appendChild(li);
+                }
+            });
+            
+            // Update counter
+            updatePlayerCount(teamKey);
+        }
+        
+        // Update the player count display
+        function updatePlayerCount(teamKey) {
+            const selectedCount = document.querySelector(`.selected-count[data-for="${teamKey}"]`);
+            const selectedList = document.querySelector(`.selected-players[data-for="${teamKey}"]`);
+            selectedCount.textContent = selectedList.children.length.toString();
+        }
+        
+        // Move selected players between lists
+        function moveSelectedPlayers(teamKey, direction) {
+            const sourceList = (direction === 'to-selected') 
+                ? document.querySelector(`.available-players[data-for="${teamKey}"]`)
+                : document.querySelector(`.selected-players[data-for="${teamKey}"]`);
+                
+            const targetList = (direction === 'to-selected')
+                ? document.querySelector(`.selected-players[data-for="${teamKey}"]`) 
+                : document.querySelector(`.available-players[data-for="${teamKey}"]`);
+                
+            const selectElement = (teamKey === 'team1') ? team1PlayersSelect : team2PlayersSelect;
+            
+            // Get selected items
+            const selectedItems = Array.from(sourceList.querySelectorAll('li.selected'));
+            
+            // Move items to the target list
+            selectedItems.forEach(item => {
+                item.classList.remove('selected');
+                targetList.appendChild(item);
+                
+                // Update the original select element
+                const option = selectElement.querySelector(`option[value="${item.dataset.value}"]`);
+                if (option) {
+                    option.selected = (direction === 'to-selected');
+                }
+            });
+            
+            // Update counter
+            updatePlayerCount(teamKey);
+        }
+        
+        // Event handler for the add/remove buttons
+        document.querySelectorAll('.add-player-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                moveSelectedPlayers(this.dataset.target, 'to-selected');
+            });
+        });
+        
+        document.querySelectorAll('.remove-player-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                moveSelectedPlayers(this.dataset.target, 'to-available');
+            });
+        });
+        
+        // Double-click to move players
+        document.addEventListener('dblclick', function(e) {
+            if (e.target.tagName === 'LI' && e.target.parentElement.classList.contains('player-list')) {
+                const teamKey = e.target.parentElement.dataset.for;
+                const isAvailable = e.target.parentElement.classList.contains('available-players');
+                
+                e.target.classList.add('selected');
+                moveSelectedPlayers(teamKey, isAvailable ? 'to-selected' : 'to-available');
+            }
+        });
+        
+        // Select All / Deselect All functionality
+        document.querySelectorAll('.select-all-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const teamKey = this.dataset.target;
+                const availableItems = document.querySelectorAll(`.available-players[data-for="${teamKey}"] li`);
+                
+                availableItems.forEach(item => item.classList.add('selected'));
+                moveSelectedPlayers(teamKey, 'to-selected');
+            });
+        });
+        
+        document.querySelectorAll('.deselect-all-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const teamKey = this.dataset.target;
+                const selectedItems = document.querySelectorAll(`.selected-players[data-for="${teamKey}"] li`);
+                
+                selectedItems.forEach(item => item.classList.add('selected'));
+                moveSelectedPlayers(teamKey, 'to-available');
+            });
+        });
+        
+        // Search functionality
+        document.querySelectorAll('.player-search').forEach(input => {
+            input.addEventListener('input', function() {
+                const teamKey = this.dataset.target;
+                const searchTerm = this.value.toLowerCase();
+                const availableList = document.querySelector(`.available-players[data-for="${teamKey}"]`);
+                
+                Array.from(availableList.children).forEach(li => {
+                    const text = li.textContent.toLowerCase();
+                    li.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        });
+        
+        // Initialize player lists
+        initializePlayerLists();
+        
+        // Update team names in UI
+        team1NameInput.addEventListener('input', function() {
+            document.querySelectorAll('.team1-name').forEach(el => {
+                el.textContent = this.value || 'Team 1';
+            });
+        });
+        
+        team2NameInput.addEventListener('input', function() {
+            document.querySelectorAll('.team2-name').forEach(el => {
+                el.textContent = this.value || 'Team 2';
+            });
+        });
+        
+        // Update summary tab
+        document.getElementById('review-tab').addEventListener('click', function() {
+            document.querySelector('.summary-date').textContent = dateInput.value;
+            document.querySelector('.summary-format').textContent = `${oversInput.value} overs per side`;
+            
+            const team1Display = document.querySelector('.team-summary .team1-name');
+            const team2Display = document.querySelector('.team-summary .team2-name');
+            
+            team1Display.textContent = team1NameInput.value || 'Team 1';
+            team2Display.textContent = team2NameInput.value || 'Team 2';
+            
+            // Add player counts to team names
+            const team1Count = document.querySelector(`.selected-count[data-for="team1"]`);
+            const team2Count = document.querySelector(`.selected-count[data-for="team2"]`);
+            team1Display.textContent += ` (${team1Count.textContent} players)`;
+            team2Display.textContent += ` (${team2Count.textContent} players)`;
+        });
+        
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Validate team names
+            if (team1NameInput.value.trim() === '') {
+                isValid = false;
+                team1NameInput.classList.add('is-invalid');
+            } else {
+                team1NameInput.classList.remove('is-invalid');
+            }
+            
+            if (team2NameInput.value.trim() === '') {
+                isValid = false;
+                team2NameInput.classList.add('is-invalid');
+            } else {
+                team2NameInput.classList.remove('is-invalid');
+            }
+            
+            // Validate player selections (at least 2 players per team)
+            const team1Count = document.querySelector(`.selected-count[data-for="team1"]`).textContent;
+            const team2Count = document.querySelector(`.selected-count[data-for="team2"]`).textContent;
+            
+            if (parseInt(team1Count) < 2) {
+                isValid = false;
+                document.querySelector(`.selected-list-container[data-for="team1"]`).classList.add('is-invalid');
+                alert('Team 1 must have at least 2 players.');
+            }
+            
+            if (parseInt(team2Count) < 2) {
+                isValid = false;
+                document.querySelector(`.selected-list-container[data-for="team2"]`).classList.add('is-invalid');
+                alert('Team 2 must have at least 2 players.');
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}
