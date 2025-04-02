@@ -61,7 +61,6 @@ class Match(models.Model):
     team1_wickets = models.IntegerField(default=0)
     team2_wickets = models.IntegerField(default=0)
     balls_bowled = models.IntegerField(default=0)
-    balls_in_current_over = models.IntegerField(default=0)  # Track balls in the current over
     batting_team = models.CharField(max_length=100, null=True, blank=True)  # Current batting team
     
     # Match status
@@ -86,10 +85,15 @@ class Match(models.Model):
         return Player.objects.filter(team=bowling_team)
     
     @property
+    def balls_in_current_over(self):
+        """Get the number of balls in the current over."""
+        return self.balls_bowled % 6
+    
+    @property
     def current_run_rate(self):
         """Calculate current run rate for the batting team"""
         overs_completed = self.balls_bowled // 6
-        balls_in_current_over = self.balls_bowled % 6
+        balls_in_current_over = self.balls_in_current_over
         
         if overs_completed > 0 or balls_in_current_over > 0:
             total_overs = overs_completed + (balls_in_current_over / 6)
@@ -117,7 +121,7 @@ class Match(models.Model):
     def overs_display(self):
         """Return overs in the format of X.Y"""
         overs_completed = self.balls_bowled // 6
-        balls_in_current_over = self.balls_bowled % 6
+        balls_in_current_over = self.balls_in_current_over
         return f"{overs_completed}.{balls_in_current_over}"
     
 # Record of out players
