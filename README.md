@@ -1,146 +1,115 @@
-# 🏏 BoundaryLine - Cricket Match Management System
+# BoundaryLine 🏏
 
-<div align="center">
-  <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python 3.8+">
-  <img src="https://img.shields.io/badge/Django-4.0+-green.svg" alt="Django 4.0+">
-  <img src="https://img.shields.io/badge/Bootstrap-5.3-purple.svg" alt="Bootstrap 5.3">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
-</div>
+A simple yet powerful cricket scoring app to track matches and player stats.
 
-<div align="center">
-  <h3>🏆 A modern, feature-rich cricket scoring and analytics platform</h3>
-</div>
+## What is BoundaryLine?
 
-## 📋 Overview
+BoundaryLine is a Django-based web application I built to help track cricket matches, player stats, and team performances. As a cricket fan, I wanted a clean, easy-to-use platform that doesn't overwhelm users with complexity while still providing all the essential features needed for cricket scoring and analysis.
 
-BoundaryLine is a robust cricket match management system designed to help cricket clubs, teams, and enthusiasts track matches, player statistics, and performance metrics. With its intuitive interface and comprehensive feature set, BoundaryLine provides everything needed to manage cricket matches from start to finish.
+## Current Features
 
-## ✨ Features
+Here's what you can do with BoundaryLine right now:
 
-### 🏏 Match Management
-- Create and manage cricket matches with detailed scorecards
-- Real-time scoring updates with ball-by-ball commentary
-- Support for various cricket formats (T20, ODI, Test)
-- Track detailed match statistics (runs, wickets, extras, etc.)
+### Match Management
+- Create and track cricket matches
+- Record scores, wickets, and basic match stats
+- View match history and results
 
-### 👥 Player Management
-- Comprehensive player profiles with performance history
-- Detailed batting and bowling statistics
-- Career tracking and performance analysis
-- Player availability management
+### Player Tracking
+- Add and manage players
+- Track basic player statistics
+- View player performance history
 
-### 📊 Analytics & Insights
-- Interactive dashboards for match and player statistics
-- Performance trend visualization
-- Team and player rankings
-- Historical data analysis
+### User Experience
+- Modern, responsive design that works on all devices
+- Dark/light mode toggle for comfortable viewing
+- Smooth page transitions and loading effects
+- User authentication (login/signup/logout)
 
-### 🎨 User Experience
-- Responsive design that works on desktop and mobile devices
-- Dark/light theme support for comfortable viewing
-- Real-time notifications for match updates
-- User authentication and role-based access control
+## Tech Stack
 
-## 🚀 Installation
+BoundaryLine is built with:
+- **Backend**: Django (Python)
+- **Frontend**: HTML, CSS, JavaScript
+- **CSS Framework**: Bootstrap 5
+- **Icons**: Font Awesome
+- **Fonts**: Google Fonts (Inter, Poppins)
+
+## Getting Started
 
 ### Prerequisites
 - Python 3.8+
 - pip (Python package manager)
-- Virtual environment tool (recommended)
 
-### Setup Instructions
+### Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/boundaryline.git
-   cd boundaryline
-   ```
+1. Clone the repo and enter the directory
+```bash
+git clone https://github.com/yourusername/boundaryline.git
+cd boundaryline
+```
 
-2. **Create and activate a virtual environment**
-   ```bash
-   python -m venv venv
-   
-   # On Windows
-   venv\Scripts\activate
-   
-   # On macOS/Linux
-   source venv/bin/activate
-   ```
+2. Set up a virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+3. Install the requirements
+```bash
+pip install -r requirements.txt
+```
 
-4. **Run migrations**
-   ```bash
-   python manage.py migrate
-   ```
+4. Run migrations
+```bash
+python manage.py migrate
+```
 
-5. **Create a superuser**
-   ```bash
-   python manage.py createsuperuser
-   ```
+5. Create an admin user
+```bash
+python manage.py createsuperuser
+```
 
-6. **Run the development server**
-   ```bash
-   python manage.py runserver
-   ```
+6. Start the development server
+```bash
+python manage.py runserver
+```
 
-7. **Access the application**
-   
-   Open your browser and navigate to `http://127.0.0.1:8000`
+7. Open your browser and go to http://127.0.0.1:8000
 
-## 🔧 Usage
+## How to Use
 
-### Creating a New Match
+### Creating a Match
 1. Log in to your account
-2. Navigate to the Matches section
-3. Click "Create New Match"
-4. Fill in the match details (teams, venue, format)
-5. Add players to each team
-6. Start the match scoring
+2. Go to the Matches page
+3. Click "Add Match" 
+4. Fill in the basic details (teams, location, date)
+5. Save the match
 
-### Live Scoring
-1. Select the active match
-2. Use the scoring panel to record each ball
-3. Track wickets, extras, and other events
-4. Update overs and innings as the match progresses
+### Tracking Player Stats
+1. Navigate to Players
+2. Click on a player to view their stats
+3. Stats are automatically updated when matches are scored
 
-### Viewing Player Statistics
-1. Navigate to the Players section
-2. Select a player to view their profile
-3. Explore batting, bowling, and fielding statistics
-4. View performance trends and match history
+## Planned Features
 
-## 🎯 Future Roadmap
+I'm actively working on adding these features:
 
-- Mobile application for on-the-go scoring
-- Advanced analytics with machine learning predictions
-- Video integration for match highlights
-- API for third-party integrations
-- Tournament and league management
+- Live ball-by-ball scoring
+- Detailed player statistics and analytics
+- Match commentary
+- Team management
+- Tournament brackets
+- Performance graphs and visualizations
 
-## 👥 Contributing
+## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Want to help make BoundaryLine better? Contributions are welcome! Just fork the repo, make your changes, and submit a pull request.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## License
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 📞 Contact
-
-Project Maintainer - [Your Name](mailto:your.email@example.com)
+This project is open-source and available under the MIT License.
 
 ---
 
-<div align="center">
-  <p>Made with ❤️ by cricket enthusiasts for cricket enthusiasts</p>
-</div> 
+Made with ❤️ for cricket lovers, by a cricket lover. 
