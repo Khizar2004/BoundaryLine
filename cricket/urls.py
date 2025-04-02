@@ -5,6 +5,7 @@ from .views import signup_view, login_view, logout_view
 urlpatterns = [
     path('', views.home, name='home'),  # Homepage
     path('players/', views.player_list, name='player_list'),  # Player list
+    path('players/<int:player_id>/', views.player_detail, name='player_detail'),  # Player details
     path('matches/', views.match_list, name='match_list'),  # Match list
     path('players/add/', views.add_player, name='add_player'),  # Add player
     path('matches/add/', views.add_match, name='add_match'),  # Add match

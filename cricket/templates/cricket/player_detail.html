@@ -1,0 +1,181 @@
+{% extends 'cricket/base.html' %}
+{% load cricket_extras %}
+
+{% block title %}{{ player.name }} - Player Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <div class="avatar-large mx-auto mb-3 mb-md-0">
+                        <span class="initials display-4">{{ player.name|slice:":1" }}</span>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h1 class="mb-1">{{ player.name }}</h1>
+                    {% if player.team %}
+                        <span class="badge bg-primary fs-6 mb-3">{{ player.team }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6 mb-3">No Team</span>
+                    {% endif %}
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="stat-box text-center p-3 rounded bg-light">
+                                <h2 class="mb-1">{{ matches_played }}</h2>
+                                <p class="text-secondary mb-0">Matches</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="stat-box text-center p-3 rounded bg-light">
+                                <h2 class="mb-1">{{ total_runs }}</h2>
+                                <p class="text-secondary mb-0">Runs</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="stat-box text-center p-3 rounded bg-light">
+                                <h2 class="mb-1">{{ total_wickets }}</h2>
+                                <p class="text-secondary mb-0">Wickets</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="stat-box text-center p-3 rounded bg-light">
+                                <h2 class="mb-1">{{ strike_rate|floatformat:2 }}</h2>
+                                <p class="text-secondary mb-0">Strike Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Batting Stats -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h3 class="mb-0"><i class="fas fa-baseball-bat me-2 text-primary"></i>Batting Statistics</h3>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Runs</th>
+                            <th>Balls Faced</th>
+                            <th>Strike Rate</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ player.runs }}</td>
+                            <td>{{ player.balls_faced }}</td>
+                            <td>{{ strike_rate|floatformat:2 }}</td>
+                            <td>{{ player.fours_hit }}</td>
+                            <td>{{ player.sixes_hit }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bowling Stats -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h3 class="mb-0"><i class="fas fa-bowling-ball me-2 text-primary"></i>Bowling Statistics</h3>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Wickets</th>
+                            <th>Overs</th>
+                            <th>Runs Given</th>
+                            <th>Economy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ player.wickets }}</td>
+                            <td>{{ player.overs_bowled }}</td>
+                            <td>{{ player.runs_given }}</td>
+                            <td>{{ economy|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Matches (Placeholder) -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h3 class="mb-0"><i class="fas fa-history me-2 text-primary"></i>Recent Matches</h3>
+        </div>
+        <div class="card-body p-4">
+            {% if player.batting_matches.all or player.bowling_matches.all %}
+                <div class="list-group">
+                    {% for match in player.batting_matches.all|slice:":5" %}
+                        <a href="{% url 'match_details' match.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ match.team1_name }} vs {{ match.team2_name }}</h5>
+                                <small>{{ match.match_date }}</small>
+                            </div>
+                            <p class="mb-1">Role: Batsman</p>
+                        </a>
+                    {% endfor %}
+                    
+                    {% for match in player.bowling_matches.all|slice:":5" %}
+                        <a href="{% url 'match_details' match.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ match.team1_name }} vs {{ match.team2_name }}</h5>
+                                <small>{{ match.match_date }}</small>
+                            </div>
+                            <p class="mb-1">Role: Bowler</p>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> No match history available.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="text-center mb-4">
+        <a href="{% url 'player_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-chevron-left me-2"></i>Back to Players
+        </a>
+    </div>
+</div>
+
+<style>
+    .avatar-large {
+        width: 150px;
+        height: 150px;
+        background-color: var(--accent-color);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .stat-box {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock content %} 
